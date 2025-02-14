@@ -41,15 +41,20 @@ def convert_currency(amount: float, from_currency: str, to_currency: str):
 # ✅ Expense Tracker Endpoints
 @app.post("/expenses")
 def add_expense(description: str, amount: float, currency: str, target_currency: str = "USD"):
-    response = requests.get(f"{CURRENCY_API_URL}?from={currency}&to={target_currency}")
-    data = response.json()
+    currency = currency.upper()
+    target_currency = target_currency.upper()
 
-    if "rates" not in data or target_currency not in data["rates"]:
-        raise HTTPException(status_code=400, detail="Invalid currency")
+    if currency == target_currency:
+        converted_amount = amount  # If same currency, no conversion needed
+    else:
+        response = requests.get(f"{CURRENCY_API_URL}?from={currency}&to={target_currency}")
+        data = response.json()
 
-    converted_amount = amount * data["rates"][target_currency]
+        if "rates" not in data or target_currency not in data["rates"]:
+            raise HTTPException(status_code=400, detail="Invalid currency")
 
-    # ✅ Round the converted amount to 2 decimal places before saving
+        converted_amount = amount * data["rates"][target_currency]
+
     converted_amount = round(converted_amount, 2)
 
     conn = get_db_connection()
@@ -60,6 +65,7 @@ def add_expense(description: str, amount: float, currency: str, target_currency:
     conn.close()
 
     return {"message": "Expense added successfully", "converted_amount": converted_amount}
+
 
 @app.get("/expenses")
 def get_expenses():
