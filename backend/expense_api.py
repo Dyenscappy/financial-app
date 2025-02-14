@@ -1,8 +1,18 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 from backend.database import get_db_connection
 
 app = FastAPI()
+
+# ✅ Add CORS Middleware to allow frontend to connect
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this later to only your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 CURRENCY_API_URL = "https://api.frankfurter.app/latest"
 
