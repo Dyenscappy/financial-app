@@ -72,3 +72,25 @@ def get_expenses():
     ]
 
     return {"expenses": expense_list}
+
+
+# ✅ DELETE Endpoint to Remove an Expense by ID
+@app.delete("/expenses/{expense_id}")
+def delete_expense(expense_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if the expense exists
+    cursor.execute("SELECT * FROM expenses WHERE id = ?", (expense_id,))
+    expense = cursor.fetchone()
+
+    if expense is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Expense not found")
+
+    # Delete the expense
+    cursor.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+    conn.commit()
+    conn.close()
+
+    return {"message": "Expense deleted successfully"}
