@@ -50,3 +50,25 @@ def add_expense(description: str, amount: float, currency: str, target_currency:
     conn.close()
 
     return {"message": "Expense added successfully", "converted_amount": converted_amount}
+
+@app.get("/expenses")
+def get_expenses():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, description, amount, currency, converted_amount FROM expenses")
+    expenses = cursor.fetchall()
+    conn.close()
+
+    # Convert database rows to dictionary format
+    expense_list = [
+        {
+            "id": row[0],
+            "description": row[1],
+            "amount": row[2],
+            "currency": row[3],
+            "converted_amount": row[4]
+        }
+        for row in expenses
+    ]
+
+    return {"expenses": expense_list}
